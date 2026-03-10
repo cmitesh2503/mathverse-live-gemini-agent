@@ -208,4 +208,4 @@ __marimo__/
 backend/service-account.json
 backend/.env
 backend/list_models.py
-backend/firebase_key.json
+backend/firebase-key.json
