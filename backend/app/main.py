@@ -139,3 +139,10 @@ async def detect_math(file: UploadFile = File(...)):
             "detected": False,
             "solution": "Unable to detect equation."
         }
+    
+@app.get("/chat-history/{session_id}")
+def get_chat_history(session_id: str):
+
+    history = gemini_client.memory.get_history(session_id)
+
+    return {"history": history}
