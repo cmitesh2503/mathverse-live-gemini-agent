@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+websockets
+google-cloud-aiplatform
+google-cloud-firestore
+google-cloud-storage
+google-genai
+firebase-admin
+python-dotenv
