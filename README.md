@@ -225,3 +225,49 @@ Point the camera at the equation.
 The system will detect and solve it step-by-step.
 
 ---
+---
+
+### 3 Homework Image Solver
+
+Upload an image of a math problem.
+
+The AI will analyze the equation and return a structured solution.
+
+---
+
+# Google Cloud Deployment
+
+The backend is deployed using **Google Cloud Run** and uses **Vertex AI Gemini models** for reasoning.
+
+Google Cloud services used:
+
+- Vertex AI (Gemini models)
+- Cloud Run for backend hosting
+- Firestore for conversation memory
+- Cloud Storage for generated assets
+
+Example deployment architecture:
+
+Frontend → Cloud Run API → Vertex AI Gemini
+
+---
+
+# Repository Structure
+
+
+mathverse-live-gemini-agent
+
+backend/
+app/
+main.py
+services/
+gemini_service.py
+vision_service.py
+memory/
+memory_service.py
+
+frontend/
+app/
+lib/
+screens/
+services/
