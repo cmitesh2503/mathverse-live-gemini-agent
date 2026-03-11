@@ -102,7 +102,7 @@ Judges can test the project locally by following these steps.
 
 ## Step 1 — Clone the repository
 
-git clone https://github.com/YOUR_USERNAME/mathverse-live-gemini-agent
+git clone https://github.com/cmitesh2503/mathverse-live-gemini-agent
 
 cd mathverse-live-gemini-agent
 
