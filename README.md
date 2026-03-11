@@ -72,7 +72,7 @@ Conversation Memory Service
 
 Firestore Database
 
-![MathVerse Architecture](docs/architecture.png)
+![System Architecture](docs/architecture.png)
 
 
 Architecture flow:
