@@ -192,14 +192,32 @@ try {
 
 
 }
-static Future<String> getHistory(String sessionId) async {
+// ===============================
+// GET ALL SESSIONS
+// ===============================
 
-  final response = await http.get(
-    Uri.parse("$baseUrl/chat-history/$sessionId"),
-  );
+static Future<List> getSessions() async {
+
+  final response =
+      await http.get(Uri.parse("$baseUrl/sessions"));
 
   final data = jsonDecode(response.body);
 
-  return data["history"];
+  return data["sessions"];
+}
+
+
+// ===============================
+// GET CHAT HISTORY
+// ===============================
+
+static Future<List> getHistory(String sessionId) async {
+
+  final response =
+      await http.get(Uri.parse("$baseUrl/chat-history/$sessionId"));
+
+  final data = jsonDecode(response.body);
+
+  return data["history"] ?? [];
 }
 }

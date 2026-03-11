@@ -20,36 +20,12 @@ class _TutorScreenState extends State<TutorScreen> {
   bool isListening = false;
   bool isLoading = false;
 
-  List<Map<String, String>> messages = [];
+  List<Map<String,String>> messages = [];
 
   @override
   void initState() {
     super.initState();
     initSpeech();
-    loadHistory();
-  }
-
-  // ===============================
-  // LOAD HISTORY FROM BACKEND
-  // ===============================
-
-  Future<void> loadHistory() async {
-
-    try {
-
-      String history = await ApiService.getHistory("student_1");
-
-      setState(() {
-        messages.add({
-          "role": "assistant",
-          "text": history
-        });
-      });
-
-    } catch (e) {
-      print("History error $e");
-    }
-
   }
 
   // ===============================
@@ -71,15 +47,15 @@ class _TutorScreenState extends State<TutorScreen> {
 
   Future<void> askAI() async {
 
-    if (controller.text.isEmpty) return;
+    if(controller.text.isEmpty) return;
 
     String question = controller.text;
 
     setState(() {
 
       messages.add({
-        "role": "user",
-        "text": question
+        "role":"user",
+        "text":question
       });
 
       isLoading = true;
@@ -93,8 +69,8 @@ class _TutorScreenState extends State<TutorScreen> {
     setState(() {
 
       messages.add({
-        "role": "assistant",
-        "text": response
+        "role":"assistant",
+        "text":response
       });
 
       isLoading = false;
@@ -113,30 +89,31 @@ class _TutorScreenState extends State<TutorScreen> {
 
     bool available = await speech.initialize();
 
-    if (!available) return;
+    if(!available) return;
 
     setState(() {
       isListening = true;
     });
 
     speech.listen(
-      onResult: (result) {
+      onResult: (result){
         controller.text = result.recognizedWords;
       },
     );
   }
 
-  void stopListening() {
+  void stopListening(){
 
     speech.stop();
 
     setState(() {
       isListening = false;
     });
+
   }
 
   // ===============================
-  // STOP AI SPEAKING
+  // STOP AI VOICE
   // ===============================
 
   void stopAI() async {
@@ -155,13 +132,13 @@ class _TutorScreenState extends State<TutorScreen> {
 
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
 
-      margin: const EdgeInsets.symmetric(vertical: 6),
+      margin: const EdgeInsets.symmetric(vertical:6),
 
       child: Container(
 
         padding: const EdgeInsets.all(12),
 
-        constraints: const BoxConstraints(maxWidth: 320),
+        constraints: const BoxConstraints(maxWidth:350),
 
         decoration: BoxDecoration(
 
@@ -176,12 +153,157 @@ class _TutorScreenState extends State<TutorScreen> {
           message["text"] ?? "",
 
           style: TextStyle(
-
             color: isUser ? Colors.white : Colors.black,
-            fontSize: 16,
-
+            fontSize:16
           ),
         ),
+      ),
+    );
+  }
+
+  // ===============================
+  // SIDEBAR (CHATGPT STYLE)
+  // ===============================
+
+  Widget sidebar(){
+
+    return Container(
+
+      width:260,
+      color: Colors.grey[200],
+
+      child: FutureBuilder(
+
+        future: ApiService.getSessions(),
+
+        builder: (context,snapshot){
+
+          if(!snapshot.hasData){
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          List sessions = snapshot.data!;
+
+          return ListView(
+
+            children: [
+
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  "Your chats",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize:16
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal:12),
+                child: ElevatedButton(
+
+                  onPressed: (){
+                    setState(() {
+                      messages.clear();
+                    });
+                  },
+
+                  child: const Text("New Chat"),
+                ),
+              ),
+
+              const SizedBox(height:10),
+
+              ...sessions.map((session){
+
+                return ListTile(
+
+                  title: Text(session["title"] ?? "Conversation"),
+
+                  onTap: () async {
+
+                    List history =
+                        await ApiService.getHistory(session["id"]);
+
+                    setState(() {
+
+                      messages.clear();
+
+                        for (var msg in history) {
+
+                          messages.add({
+                            "role": msg["role"],
+                            "text": msg["content"]
+                          });
+
+                        }
+
+                    });
+
+                  },
+                );
+
+              }).toList(),
+
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ===============================
+  // INPUT BAR
+  // ===============================
+
+  Widget inputBar(){
+
+    return Container(
+
+      padding: const EdgeInsets.all(10),
+
+      child: Row(
+
+        children: [
+
+          Expanded(
+
+            child: TextField(
+
+              controller: controller,
+
+              decoration: const InputDecoration(
+                hintText: "Ask a math question...",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+
+          const SizedBox(width:8),
+
+          IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: askAI,
+          ),
+
+          IconButton(
+            icon: Icon(
+              isListening ? Icons.mic_off : Icons.mic
+            ),
+            onPressed: isListening
+                ? stopListening
+                : startListening,
+          ),
+
+          IconButton(
+            icon: const Icon(Icons.stop),
+            onPressed: stopAI,
+          ),
+
+        ],
       ),
     );
   }
@@ -199,78 +321,46 @@ class _TutorScreenState extends State<TutorScreen> {
         title: const Text("Ask AI Tutor"),
       ),
 
-      body: Column(
+      body: Row(
 
         children: [
 
-          // CHAT HISTORY
+          sidebar(),
 
           Expanded(
 
-            child: ListView.builder(
-
-              padding: const EdgeInsets.all(12),
-
-              itemCount: messages.length,
-
-              itemBuilder: (context,index){
-
-                return chatBubble(messages[index]);
-
-              },
-
-            ),
-          ),
-
-          if(isLoading)
-            const Padding(
-              padding: EdgeInsets.all(10),
-              child: CircularProgressIndicator(),
-            ),
-
-          // INPUT BAR
-
-          Container(
-
-            padding: const EdgeInsets.all(10),
-
-            child: Row(
+            child: Column(
 
               children: [
 
                 Expanded(
 
-                  child: TextField(
+                  child: ListView.builder(
 
-                    controller: controller,
+                    padding: const EdgeInsets.all(12),
 
-                    decoration: const InputDecoration(
-                      hintText: "Ask a math question...",
-                      border: OutlineInputBorder(),
-                    ),
+                    itemCount: messages.length,
+
+                    itemBuilder: (context,index){
+
+                      return chatBubble(messages[index]);
+
+                    },
                   ),
                 ),
 
-                const SizedBox(width: 8),
+                if(isLoading)
+                  const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(),
+                  ),
 
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: askAI,
-                ),
-
-                IconButton(
-                  icon: Icon(isListening ? Icons.mic_off : Icons.mic),
-                  onPressed: isListening ? stopListening : startListening,
-                ),
-
-                IconButton(
-                  icon: const Icon(Icons.stop),
-                  onPressed: stopAI,
-                ),
+                inputBar(),
 
               ],
             ),
           )
+
         ],
       ),
     );
