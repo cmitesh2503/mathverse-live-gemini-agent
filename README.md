@@ -271,3 +271,19 @@ app/
 lib/
 screens/
 services/
+
+---
+
+# Future Improvements
+
+- Expanded curriculum coverage
+- Visual math explanations
+- Adaptive difficulty and learning analytics
+- Teacher and parent dashboards
+- Scalable AI tutoring platform on Google Cloud
+
+---
+
+# License
+
+This project was created for educational and hackathon purposes.
