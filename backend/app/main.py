@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.services.gemini_service import GeminiService
 from app.services.vision_service import VisionService
 from app.services.session_memory import SessionMemory
-from app.services import gemini_service
+#from app.services import gemini_service
 
 app = FastAPI(title="MathVerse AI Tutor API")
 
@@ -12,7 +12,7 @@ app.add_middleware(
 CORSMiddleware,
 allow_origins=["*",
         "http://localhost:5000",
-        "http://127.0.01:5000"],
+        "http://127.0.0.1:5000"],
 allow_credentials=True,
 allow_methods=["*"],
 allow_headers=["*"],
@@ -144,13 +144,6 @@ async def detect_math(file: UploadFile = File(...)):
             "detected": False,
             "solution": "Unable to detect equation."
         }
-    
-@app.get("/chat-history/{session_id}")
-def get_chat_history(session_id: str):
-
-    history = gemini_client.memory.get_history(session_id)
-
-    return {"history": history}
 
 # ======================================
 # GET CHAT SESSIONS
@@ -160,7 +153,7 @@ def get_chat_history(session_id: str):
 def get_sessions():
     
     try:
-        sessions = gemini_service.memory.get_sessions()
+        sessions = gemini_client.memory.get_sessions()
 
         return {
         "sessions": sessions
@@ -170,7 +163,9 @@ def get_sessions():
         return {
         "sessions": []
     }
-
+        return {
+            "sessions": []}
+        
 # ======================================
 # GET CHAT HISTORY
 # ======================================
@@ -180,7 +175,7 @@ def get_chat_history(session_id: str):
 
     try:
 
-        history = gemini_service.memory.get_history(session_id)
+        history = gemini_client.memory.get_history(session_id)
 
         return {
             "history": history

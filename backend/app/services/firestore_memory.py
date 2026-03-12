@@ -18,14 +18,19 @@ class FirestoreMemory:
 
     def save_message(self, session_id, role, text):
 
-        self.db.collection("conversations") \
-            .document(session_id) \
-            .collection("messages") \
-            .add({
-                "role": role,
-                "text": text,
-                "timestamp": firestore.SERVER_TIMESTAMP
-            })
+        session_ref = self.db.collection("conversations").document(session_id)
+
+        # ensure session document exists
+        session_ref.set({
+            "created_at": firestore.SERVER_TIMESTAMP
+        }, merge=True)
+
+        # add message
+        session_ref.collection("messages").add({
+            "role": role,
+            "text": text,
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
 
     # ======================================
     # GET CHAT HISTORY
