@@ -1,58 +1,95 @@
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+
 class SessionMemory:
 
     def __init__(self):
-        self.sessions = {}
 
+        try:
+            if not firebase_admin._apps:
+                cred = credentials.Certificate("firebase-key.json")
+                firebase_admin.initialize_app(cred)
+
+            self.db = firestore.client()
+
+        except Exception as e:
+            print("Firebase init error:", e)
+            self.db = None
+
+    # -------------------------
+    # SAVE MESSAGE
+    # -------------------------
+    def save_message(self, session_id, role, text):
+
+        if not self.db:
+            return
+
+        session_ref = self.db.collection("conversations").document(session_id)
+
+        if role == "student":
+
+            session_doc = session_ref.get()
+
+            if not session_doc.exists:
+
+                session_ref.set({
+                    "title": text[:50]
+                })
+
+        session_ref.collection("messages").add({
+            "role": role,
+            "text": text,
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+
+    # -------------------------
+    # GET HISTORY
+    # -------------------------
     def get_history(self, session_id):
 
-        if session_id not in self.sessions:
-            self.sessions[session_id] = []
+        if not self.db:
+            return []
 
-        return self.sessions[session_id]
+        docs = (
+            self.db.collection("conversations")
+            .document(session_id)
+            .collection("messages")
+            .order_by("timestamp")
+            .stream()
+        )
 
-    # ======================================
-    # ADD MESSAGE
-    # ======================================
+        history = []
 
-    def add_message(self, session_id, role, content):
+        for doc in docs:
+            data = doc.to_dict()
 
-        if session_id not in self.sessions:
-            self.sessions[session_id] = []
+            history.append({
+                "role": data.get("role"),
+                "content": data.get("text")
+            })
 
-        self.sessions[session_id].append({
-            "role": role,
-            "content": content
-        })
+        return history
 
-        # Auto title from first student question
-        if len(self.sessions[session_id]) == 1 and role == "student":
+    # -------------------------
+    # GET SESSIONS
+    # -------------------------
+    def get_sessions(self):
 
-            title = content[:40]
+        if not self.db:
+            return []
 
-            self.session_titles[session_id] = title
+        sessions = []
 
-        # keep last 10 messages for latency control
-        if len(history) > 10:
-            history.pop(0)
+        docs = self.db.collection("conversations").stream()
 
+        for doc in docs:
 
-session_memory = SessionMemory()
+            data = doc.to_dict()
 
-# ======================================
-# GET ALL SESSIONS
-# ======================================
+            sessions.append({
+                "id": doc.id,
+                "title": data.get("title", "New Chat")
+            })
 
-def get_sessions(self):
-
-    sessions = []
-
-    for session_id in self.sessions:
-        
-        title = self.session_titles.get(session_id, "New Chat")
-
-        sessions.append({
-            "id": session_id,
-            "title": title
-        })
-
-    return sessions
+        return sessions

@@ -12,29 +12,35 @@ class FirestoreMemory:
 
         self.db = firestore.client()
 
-    # ======================================
+    # ===============================
     # SAVE MESSAGE
-    # ======================================
+    # ===============================
 
     def save_message(self, session_id, role, text):
 
         session_ref = self.db.collection("conversations").document(session_id)
 
-        # ensure session document exists
-        session_ref.set({
-            "created_at": firestore.SERVER_TIMESTAMP
-        }, merge=True)
+        # create session if first student message
+        if role == "student":
 
-        # add message
+            session_doc = session_ref.get()
+
+            if not session_doc.exists:
+
+                session_ref.set({
+                    "title": text[:50],
+                    "created_at": firestore.SERVER_TIMESTAMP
+                })
+
         session_ref.collection("messages").add({
             "role": role,
             "text": text,
             "timestamp": firestore.SERVER_TIMESTAMP
         })
 
-    # ======================================
+    # ===============================
     # GET CHAT HISTORY
-    # ======================================
+    # ===============================
 
     def get_history(self, session_id):
 
@@ -59,9 +65,9 @@ class FirestoreMemory:
 
         return history
 
-    # ======================================
+    # ===============================
     # GET ALL SESSIONS
-    # ======================================
+    # ===============================
 
     def get_sessions(self):
 
@@ -71,24 +77,11 @@ class FirestoreMemory:
 
         for doc in docs:
 
-            session_id = doc.id
-
-            messages = (
-                self.db.collection("conversations")
-                .document(session_id)
-                .collection("messages")
-                .limit(1)
-                .stream()
-            )
-
-            title = "New Chat"
-
-            for m in messages:
-                title = m.to_dict()["text"][:40]
+            data = doc.to_dict()
 
             sessions.append({
-                "id": session_id,
-                "title": title
+                "id": doc.id,
+                "title": data.get("title", "New Chat")
             })
 
         return sessions

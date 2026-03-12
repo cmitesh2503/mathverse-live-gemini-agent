@@ -12,6 +12,9 @@ class TutorScreen extends StatefulWidget {
 }
 
 class _TutorScreenState extends State<TutorScreen> {
+  String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+
+  final ScrollController _scrollController = ScrollController();
 
   final SpeechToText speech = SpeechToText();
   final FlutterTts tts = FlutterTts();
@@ -26,6 +29,36 @@ class _TutorScreenState extends State<TutorScreen> {
   void initState() {
     super.initState();
     initSpeech();
+  }
+
+  void scrollToBottom() {
+
+  Future.delayed(const Duration(milliseconds: 200), () {
+
+    if (_scrollController.hasClients) {
+
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+
+    }
+
+  });
+
+}
+
+  void newChat() {
+
+    setState(() {
+
+      messages.clear();
+
+      sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    });
+
   }
 
   // ===============================
@@ -72,6 +105,7 @@ class _TutorScreenState extends State<TutorScreen> {
         "role":"assistant",
         "text":response
       });
+    scrollToBottom();
 
       isLoading = false;
 
@@ -336,7 +370,7 @@ class _TutorScreenState extends State<TutorScreen> {
                 Expanded(
 
                   child: ListView.builder(
-
+                    controller: _scrollController,
                     padding: const EdgeInsets.all(12),
 
                     itemCount: messages.length,

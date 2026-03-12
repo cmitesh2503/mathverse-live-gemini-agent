@@ -153,7 +153,7 @@ async def detect_math(file: UploadFile = File(...)):
 def get_sessions():
     
     try:
-        sessions = gemini_client.memory.get_sessions()
+        sessions = memory.get_sessions()
 
         return {
         "sessions": sessions
@@ -175,7 +175,7 @@ def get_chat_history(session_id: str):
 
     try:
 
-        history = gemini_client.memory.get_history(session_id)
+        history = memory.get_history(session_id)
 
         return {
             "history": history
