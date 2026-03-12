@@ -81,7 +81,11 @@ class SessionMemory:
 
         sessions = []
 
-        docs = self.db.collection("conversations").stream()
+        docs = (
+            self.db.collection("conversations")
+            .order_by("created_at", direction=firestore.Query.DESCENDING)
+            .stream()
+        )
 
         for doc in docs:
 

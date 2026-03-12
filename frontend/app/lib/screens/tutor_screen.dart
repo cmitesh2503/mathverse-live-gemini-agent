@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:flutter_tts/flutter_tts.dart';
-
 import '../services/api_service.dart';
+
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 
 class TutorScreen extends StatefulWidget {
   const TutorScreen({super.key});
@@ -12,339 +12,175 @@ class TutorScreen extends StatefulWidget {
 }
 
 class _TutorScreenState extends State<TutorScreen> {
+
+  List messages = [];
+  List sessions = [];
+
   String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
 
-  final ScrollController _scrollController = ScrollController();
-
-  final SpeechToText speech = SpeechToText();
-  final FlutterTts tts = FlutterTts();
   final TextEditingController controller = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+
+  late stt.SpeechToText speech;
+  late FlutterTts tts;
 
   bool isListening = false;
-  bool isLoading = false;
-
-  List<Map<String,String>> messages = [];
 
   @override
   void initState() {
     super.initState();
-    initSpeech();
+
+    speech = stt.SpeechToText();
+    tts = FlutterTts();
+
+    loadSessions();
   }
+
+  // ============================
+  // LOAD SESSIONS
+  // ============================
+
+  Future loadSessions() async {
+
+    final data = await ApiService.getSessions();
+
+    setState(() {
+      sessions = data;
+    });
+  }
+
+  // ============================
+  // LOAD CHAT HISTORY
+  // ============================
+
+  Future loadHistory(String id) async {
+
+    final history = await ApiService.getHistory(id);
+
+    setState(() {
+
+      sessionId = id;
+      messages = history;
+    });
+
+    scrollToBottom();
+  }
+
+  // ============================
+  // AUTO SCROLL
+  // ============================
 
   void scrollToBottom() {
 
-  Future.delayed(const Duration(milliseconds: 200), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
 
-    if (_scrollController.hasClients) {
+      if (scrollController.hasClients) {
 
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
-    }
+  // ============================
+  // SEND MESSAGE
+  // ============================
 
-  });
+  Future sendMessage() async {
 
-}
+    String question = controller.text;
+
+    if (question.isEmpty) return;
+
+    setState(() {
+
+      messages.add({
+        "role": "user",
+        "content": question
+      });
+    });
+
+    controller.clear();
+
+    scrollToBottom();
+
+    final answer = await ApiService.askTutor(question, sessionId);
+
+    setState(() {
+
+      messages.add({
+        "role": "assistant",
+        "content": answer
+      });
+    });
+
+    scrollToBottom();
+
+    await tts.speak(answer);
+
+    loadSessions();
+  }
+
+  // ============================
+  // NEW CHAT
+  // ============================
 
   void newChat() {
 
     setState(() {
 
-      messages.clear();
-
       sessionId = DateTime.now().millisecondsSinceEpoch.toString();
-
+      messages = [];
     });
 
+    loadSessions();
   }
 
-  // ===============================
-  // INIT SPEECH
-  // ===============================
+  // ============================
+  // START MIC
+  // ============================
 
-  Future<void> initSpeech() async {
-
-    await speech.initialize();
-
-    await tts.setLanguage("en-US");
-    await tts.setSpeechRate(0.4);
-
-  }
-
-  // ===============================
-  // ASK AI
-  // ===============================
-
-  Future<void> askAI() async {
-
-    if(controller.text.isEmpty) return;
-
-    String question = controller.text;
-
-    setState(() {
-
-      messages.add({
-        "role":"user",
-        "text":question
-      });
-
-      isLoading = true;
-
-    });
-
-    controller.clear();
-
-    String response = await ApiService.askTutor(question);
-
-    setState(() {
-
-      messages.add({
-        "role":"assistant",
-        "text":response
-      });
-    scrollToBottom();
-
-      isLoading = false;
-
-    });
-
-    await tts.speak(response);
-
-  }
-
-  // ===============================
-  // SPEECH INPUT
-  // ===============================
-
-  void startListening() async {
+  Future startListening() async {
 
     bool available = await speech.initialize();
 
-    if(!available) return;
+    if (available) {
 
-    setState(() {
-      isListening = true;
-    });
+      setState(() {
+        isListening = true;
+      });
 
-    speech.listen(
-      onResult: (result){
-        controller.text = result.recognizedWords;
-      },
-    );
+      speech.listen(
+        onResult: (result) {
+
+          setState(() {
+            controller.text = result.recognizedWords;
+          });
+
+        },
+      );
+    }
   }
 
-  void stopListening(){
+  // ============================
+  // STOP MIC
+  // ============================
 
-    speech.stop();
+  Future stopListening() async {
+
+    await speech.stop();
 
     setState(() {
       isListening = false;
     });
-
   }
 
-  // ===============================
-  // STOP AI VOICE
-  // ===============================
-
-  void stopAI() async {
-    await tts.stop();
-  }
-
-  // ===============================
-  // CHAT BUBBLE
-  // ===============================
-
-  Widget chatBubble(Map<String,String> message){
-
-    bool isUser = message["role"] == "user";
-
-    return Container(
-
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-
-      margin: const EdgeInsets.symmetric(vertical:6),
-
-      child: Container(
-
-        padding: const EdgeInsets.all(12),
-
-        constraints: const BoxConstraints(maxWidth:350),
-
-        decoration: BoxDecoration(
-
-          color: isUser ? Colors.blue : Colors.grey[300],
-
-          borderRadius: BorderRadius.circular(12),
-
-        ),
-
-        child: Text(
-
-          message["text"] ?? "",
-
-          style: TextStyle(
-            color: isUser ? Colors.white : Colors.black,
-            fontSize:16
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ===============================
-  // SIDEBAR (CHATGPT STYLE)
-  // ===============================
-
-  Widget sidebar(){
-
-    return Container(
-
-      width:260,
-      color: Colors.grey[200],
-
-      child: FutureBuilder(
-
-        future: ApiService.getSessions(),
-
-        builder: (context,snapshot){
-
-          if(!snapshot.hasData){
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          List sessions = snapshot.data!;
-
-          return ListView(
-
-            children: [
-
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  "Your chats",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize:16
-                  ),
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal:12),
-                child: ElevatedButton(
-
-                  onPressed: (){
-                    setState(() {
-                      messages.clear();
-                    });
-                  },
-
-                  child: const Text("New Chat"),
-                ),
-              ),
-
-              const SizedBox(height:10),
-
-              ...sessions.map((session){
-
-                return ListTile(
-
-                  title: Text(session["title"] ?? "Conversation"),
-
-                  onTap: () async {
-
-                    List history =
-                        await ApiService.getHistory(session["id"]);
-
-                    setState(() {
-
-                      messages.clear();
-
-                        for (var msg in history) {
-
-                          messages.add({
-                            "role": msg["role"],
-                            "text": msg["content"]
-                          });
-
-                        }
-
-                    });
-
-                  },
-                );
-
-              }).toList(),
-
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  // ===============================
-  // INPUT BAR
-  // ===============================
-
-  Widget inputBar(){
-
-    return Container(
-
-      padding: const EdgeInsets.all(10),
-
-      child: Row(
-
-        children: [
-
-          Expanded(
-
-            child: TextField(
-
-              controller: controller,
-
-              decoration: const InputDecoration(
-                hintText: "Ask a math question...",
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-
-          const SizedBox(width:8),
-
-          IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: askAI,
-          ),
-
-          IconButton(
-            icon: Icon(
-              isListening ? Icons.mic_off : Icons.mic
-            ),
-            onPressed: isListening
-                ? stopListening
-                : startListening,
-          ),
-
-          IconButton(
-            icon: const Icon(Icons.stop),
-            onPressed: stopAI,
-          ),
-
-        ],
-      ),
-    );
-  }
-
-  // ===============================
+  // ============================
   // UI
-  // ===============================
+  // ============================
 
   @override
   Widget build(BuildContext context) {
@@ -356,45 +192,135 @@ class _TutorScreenState extends State<TutorScreen> {
       ),
 
       body: Row(
-
         children: [
 
-          sidebar(),
+          // ============================
+          // SIDEBAR
+          // ============================
+
+          Container(
+            width: 250,
+            color: Colors.grey[200],
+            child: Column(
+              children: [
+
+                const SizedBox(height: 10),
+
+                ElevatedButton(
+                  onPressed: newChat,
+                  child: const Text("New Chat"),
+                ),
+
+                const SizedBox(height: 10),
+
+                const Text("Your chats"),
+
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: sessions.length,
+                    itemBuilder: (context, index) {
+
+                      final s = sessions[index];
+
+                      return ListTile(
+                        title: Text(s["title"]),
+                        onTap: () => loadHistory(s["id"]),
+                      );
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+
+          // ============================
+          // CHAT AREA
+          // ============================
 
           Expanded(
-
             child: Column(
-
               children: [
 
                 Expanded(
-
                   child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(12),
-
+                    controller: scrollController,
                     itemCount: messages.length,
+                    itemBuilder: (context, index) {
 
-                    itemBuilder: (context,index){
+                      final msg = messages[index];
 
-                      return chatBubble(messages[index]);
+                      bool isUser = msg["role"] == "user";
 
+                      return Align(
+                        alignment:
+                        isUser ? Alignment.centerRight : Alignment.centerLeft,
+
+                        child: Container(
+                          margin: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isUser ? Colors.blue[200] : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(msg["content"]),
+                        ),
+                      );
                     },
                   ),
                 ),
 
-                if(isLoading)
-                  const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: CircularProgressIndicator(),
-                  ),
+                // ============================
+                // INPUT BAR
+                // ============================
 
-                inputBar(),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+
+                      IconButton(
+                        icon: Icon(
+                          isListening ? Icons.mic : Icons.mic_none,
+                        ),
+                        onPressed: () {
+
+                          if (isListening) {
+                            stopListening();
+                          } else {
+                            startListening();
+                          }
+
+                        },
+                      ),
+
+                      Expanded(
+                        child: TextField(
+                          controller: controller,
+                          decoration: const InputDecoration(
+                            hintText: "Ask a math question...",
+                          ),
+                        ),
+                      ),
+
+                      IconButton(
+                        icon: const Icon(Icons.send),
+                        onPressed: sendMessage,
+                      ),
+
+                      IconButton(
+                        icon: const Icon(Icons.stop),
+                        onPressed: () {
+                          tts.stop();
+                        },
+                      )
+
+                    ],
+                  ),
+                )
 
               ],
             ),
           )
-
         ],
       ),
     );

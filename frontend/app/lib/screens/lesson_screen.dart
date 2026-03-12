@@ -23,10 +23,12 @@ class _LessonScreenState extends State<LessonScreen> {
     loadLesson();
   }
 
-  Future<void> loadLesson() async {
+  Future loadLesson() async {
 
     lesson = await ApiService.getLesson();
-    intro = await ApiService.startLesson();
+
+    final data = await ApiService.startLesson();
+    intro = data["message"];
 
     setState(() {});
   }

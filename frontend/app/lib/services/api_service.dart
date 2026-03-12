@@ -1,223 +1,134 @@
-import 'dart:typed_data';
 import 'dart:convert';
-
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as img;
 
 class ApiService {
 
-static const String baseUrl = "http://127.0.0.1:8000";
+  static const String baseUrl = "http://127.0.0.1:8000";
 
-// ===============================
-// FIX IMAGE ORIENTATION
-// ===============================
-static Uint8List fixOrientation(Uint8List bytes) {
+  // ---------------------------
+  // GET LESSON
+  // ---------------------------
+  static Future<Map<String, dynamic>> getLesson() async {
 
-final image = img.decodeImage(bytes);
+    final response = await http.get(
+      Uri.parse("$baseUrl/lesson"),
+    );
 
-if (image == null) return bytes;
-
-final corrected = img.bakeOrientation(image);
-
-return Uint8List.fromList(img.encodeJpg(corrected, quality: 95));
-
-}
-
-// ===============================
-// GET LESSON
-// ===============================
-static Future<Map<String, dynamic>> getLesson() async {
-
-try {
-
-  final response = await http
-      .get(Uri.parse("$baseUrl/lesson"))
-      .timeout(const Duration(seconds: 20));
-
-  return jsonDecode(response.body);
-
-} catch (e) {
-
-  return {
-    "concept": "Failed to load lesson",
-    "examples": [],
-    "homework": []
-  };
-
-}
-
-}
-
-// ===============================
-// START LESSON
-// ===============================
-static Future<String> startLesson() async {
-
-try {
-
-  final response = await http
-      .get(Uri.parse("$baseUrl/start-lesson"))
-      .timeout(const Duration(seconds: 20));
-
-  final data = jsonDecode(response.body);
-
-  return data["message"] ?? "";
-
-} catch (e) {
-
-  return "Unable to start lesson.";
-
-}
-
-}
-
-// ===============================
-// ASK TUTOR
-// ===============================
-static Future<String> askTutor(String question) async {
-
-
-try {
-
-  final response = await http.post(
-    Uri.parse("$baseUrl/ask-tutor"),
-    headers: {"Content-Type": "application/json"},
-    body: jsonEncode({
-      "question": question,
-      "session_id": "student_1"
-    }),
-  ).timeout(const Duration(seconds: 40));
-
-  final data = jsonDecode(response.body);
-
-  return data["answer"] ?? "No answer returned.";
-
-} catch (e) {
-
-  return "AI tutor unavailable.";
-
-}
-
-}
-
-// ===============================
-// LIVE MATH DETECTION
-// ===============================
-static Future<String> detectMath(Uint8List imageBytes) async {
-
-try {
-
-  final image = img.decodeImage(imageBytes);
-
-  if (image == null) {
-    return "Invalid image";
+    return jsonDecode(response.body);
   }
 
-  // Fix mirror issue from webcam
-  final flipped = img.flipHorizontal(image);
+  // ---------------------------
+  // START LESSON
+  // ---------------------------
+  static Future<Map<String, dynamic>> startLesson() async {
 
-  // Crop center area (focus on equation)
-  final cropped = img.copyCrop(
-    flipped,
-    x: (flipped.width * 0.2).toInt(),
-    y: (flipped.height * 0.35).toInt(),
-    width: (flipped.width * 0.6).toInt(),
-    height: (flipped.height * 0.3).toInt(),
-  );
+    final response = await http.get(
+      Uri.parse("$baseUrl/start-lesson"),
+    );
 
-  final jpg = Uint8List.fromList(img.encodeJpg(cropped, quality: 95));
+    return jsonDecode(response.body);
+  }
 
-  var request = http.MultipartRequest(
-    'POST',
-    Uri.parse("$baseUrl/detect-math"),
-  );
+  // ---------------------------
+  // ASK TUTOR
+  // ---------------------------
+  static Future<String> askTutor(String question, String sessionId) async {
 
-  request.files.add(
-    http.MultipartFile.fromBytes(
-      'file',
-      jpg,
-      filename: "frame.jpg",
-    ),
-  );
+    final response = await http.post(
+      Uri.parse("$baseUrl/ask-tutor"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "question": question,
+        "session_id": sessionId
+      }),
+    );
 
-  var response = await request.send();
-  var res = await http.Response.fromStream(response);
+    final data = jsonDecode(response.body);
 
-  final data = jsonDecode(res.body);
+    return data["answer"];
+  }
 
-  return data["solution"] ?? "Unable to detect equation";
+  // ---------------------------
+  // SOLVE HOMEWORK
+  // ---------------------------
+  static Future<String> solveHomework(Uint8List imageBytes) async {
 
-} catch (e) {
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse("$baseUrl/solve-homework"),
+    );
 
-  return "Detection failed";
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        "file",
+        imageBytes,
+        filename: "homework.png",
+      ),
+    );
 
-}
+    final response = await request.send();
 
-}
+    final respStr = await response.stream.bytesToString();
 
-// ===============================
-// HOMEWORK SOLVER
-// ===============================
-static Future<String> solveHomework(Uint8List imageBytes) async {
+    final data = jsonDecode(respStr);
 
-try {
+    return data["solution"];
+  }
 
-  final corrected = fixOrientation(imageBytes);
+  // ---------------------------
+  // LIVE CAMERA DETECT
+  // ---------------------------
+  static Future<String> detectMath(Uint8List imageBytes) async {
 
-  var request = http.MultipartRequest(
-    'POST',
-    Uri.parse("$baseUrl/solve-homework"),
-  );
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse("$baseUrl/detect-math"),
+    );
 
-  request.files.add(
-    http.MultipartFile.fromBytes(
-      'file',
-      corrected,
-      filename: "homework.jpg",
-    ),
-  );
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        "file",
+        imageBytes,
+        filename: "camera.png",
+      ),
+    );
 
-  var response = await request.send();
-  var res = await http.Response.fromStream(response);
+    final response = await request.send();
 
-  final data = jsonDecode(res.body);
+    final respStr = await response.stream.bytesToString();
 
-  return data["solution"] ?? "No solution";
+    final data = jsonDecode(respStr);
 
-} catch (e) {
+    return data["solution"];
+  }
 
-  return "Solver failed";
+  // ---------------------------
+  // GET SESSIONS
+  // ---------------------------
+  static Future<List> getSessions() async {
 
-}
+    final response = await http.get(
+      Uri.parse("$baseUrl/sessions"),
+    );
 
+    final data = jsonDecode(response.body);
 
-}
-// ===============================
-// GET ALL SESSIONS
-// ===============================
+    return data["sessions"];
+  }
 
-static Future<List> getSessions() async {
+  // ---------------------------
+  // GET CHAT HISTORY
+  // ---------------------------
+  static Future<List> getHistory(String sessionId) async {
 
-  final response =
-      await http.get(Uri.parse("$baseUrl/sessions"));
+    final response = await http.get(
+      Uri.parse("$baseUrl/chat-history/$sessionId"),
+    );
 
-  final data = jsonDecode(response.body);
+    final data = jsonDecode(response.body);
 
-  return data["sessions"];
-}
+    return data["history"];
+  }
 
-
-// ===============================
-// GET CHAT HISTORY
-// ===============================
-
-static Future<List> getHistory(String sessionId) async {
-
-  final response =
-      await http.get(Uri.parse("$baseUrl/chat-history/$sessionId"));
-
-  final data = jsonDecode(response.body);
-
-  return data["history"] ?? [];
-}
 }
