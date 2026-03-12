@@ -2,3 +2,8 @@ backend/service-account.json
 backend/.env
 backend/list_models.py
 backend/firebase-key.json
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
