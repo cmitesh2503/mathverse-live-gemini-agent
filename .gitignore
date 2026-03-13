@@ -7,3 +7,4 @@ backend/firebase-key.json
 *.tfstate.*
 .terraform/
 .terraform.lock.hcl
+terraform/terraform.tfstate.backup

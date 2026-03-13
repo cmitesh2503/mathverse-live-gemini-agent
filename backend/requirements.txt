@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 websockets
 google-cloud-aiplatform
 google-cloud-firestore
@@ -7,3 +7,8 @@ google-cloud-storage
 google-genai
 firebase-admin
 python-dotenv
+google-generativeai
+python-multipart
+pillow
+opencv-python-headless
+pydantic
