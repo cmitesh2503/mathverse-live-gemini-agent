@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:async';
 
 import '../services/api_service.dart';
+import 'package:image/image.dart' as img;
 
 class LiveCameraSolver extends StatefulWidget {
 const LiveCameraSolver({super.key});
@@ -74,7 +75,6 @@ timer = Timer.periodic(
 
 Future<void> detectMath() async {
 
-
 if (controller == null || !controller!.value.isInitialized) return;
 
 if (solving) return;
@@ -89,7 +89,13 @@ try {
 
   Uint8List bytes = await image.readAsBytes();
 
-  final result = await ApiService.detectMath(bytes);
+  img.Image original = img.decodeImage(bytes)!;
+
+  img.Image rotated = img.copyRotate(original, angle: 180);
+
+  Uint8List fixedBytes = Uint8List.fromList(img.encodeJpg(rotated));
+
+  final result = await ApiService.detectMath(fixedBytes);
 
   if (!mounted) return;
 
@@ -103,8 +109,8 @@ try {
 
 solving = false;
 
-
 }
+
 
 @override
 void dispose() {

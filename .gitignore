@@ -1,10 +1,28 @@
-backend/service-account.json
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Backend secrets
 backend/.env
-backend/list_models.py
 backend/firebase-key.json
+backend/service-account.json
+
 # Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-.terraform.lock.hcl
-terraform/terraform.tfstate.backup
+terraform/.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# Flutter
+frontend/app/build/
+frontend/app/.dart_tool/
+
+# Firebase
+frontend/.firebase/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

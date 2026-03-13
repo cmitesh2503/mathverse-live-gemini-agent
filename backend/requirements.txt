@@ -12,3 +12,5 @@ python-multipart
 pillow
 opencv-python-headless
 pydantic
+opencv-python-headless
+numpy

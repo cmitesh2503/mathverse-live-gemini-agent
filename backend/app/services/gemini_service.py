@@ -1,32 +1,37 @@
 from google import genai
 from app.core.config import settings
-from app.services.session_memory import SessionMemory
 from app.services.firestore_memory import FirestoreMemory
+
+
 class GeminiService:
 
     def __init__(self):
-
+        # Initialize Gemini client
         self.client = genai.Client(
             api_key=settings.GEMINI_API_KEY
         )
 
+        # Firestore conversation memory
         self.memory = FirestoreMemory()
 
-
-# ======================================
-# SIMPLE ASK
-# ======================================
+    # ======================================
+    # SIMPLE ASK
+    # ======================================
     def simple_ask(self, question, context):
 
-        prompt = f"""
+        name = context.get("name", "Student")
+        grade = context.get("grade", "Unknown")
+        board = context.get("board", "Unknown")
+        chapter = context.get("current_chapter", "General Math")
 
+        prompt = f"""
     You are MathVerse AI Tutor.
 
     Student:
-    Name: {context["name"]}
-    Grade: {context["grade"]}
-    Board: {context["board"]}
-    Chapter: {context["current_chapter"]}
+    Name: {name}
+    Grade: {grade}
+    Board: {board}
+    Chapter: {chapter}
 
     Answer in MAXIMUM 4 short sentences.
 
@@ -34,67 +39,79 @@ class GeminiService:
     {question}
     """
 
-        response = self.client.models.generate_content(
-            model=settings.GEMINI_MODEL,
-            contents=prompt
-        )
+        try:
+            response = self.client.models.generate_content(
+                model=settings.GEMINI_MODEL,
+                contents=prompt
+            )
 
-        return response.text
+            # Gemini sometimes returns text in different structures
+            if response.text:
+                return response.text
 
+            return response.candidates[0].content.parts[0].text
 
-# ======================================
-# CHAT WITH MEMORY
-# ======================================
+        except Exception as e:
+            return f"Gemini ERROR: {str(e)}"
+
+    # ======================================
+    # CHAT WITH MEMORY
+    # ======================================
     def chat_with_memory(self, session_id, message, student_context):
 
         history = self.memory.get_history(session_id)
 
         prompt = f"""
-    You are MathVerse AI Tutor helping a Grade {student_context["grade"]} student.
+You are MathVerse AI Tutor helping a Grade {student_context["grade"]} student.
 
-    Conversation history:
-    {history}
+Conversation history:
+{history}
 
-    Student question:
-    {message}
+Student question:
+{message}
 
-    Important formatting rules:
+Important formatting rules:
 
-    - Use ONLY plain text.
-    - Do NOT use Markdown (** or *).
-    - Do NOT use LaTeX ($).
-    - Do NOT use words like "plus" or "minus".
-    - Always use math symbols: +  -  ×  ÷  =
+- Use ONLY plain text
+- Do NOT use Markdown (** or *)
+- Do NOT use LaTeX ($)
+- Always use math symbols: +  -  ×  ÷  =
 
-    Format answers like this:
+Format answers like this:
 
-    2x + 3 = 11
-    2x = 11 - 3
-    2x = 8
-    x = 4
+2x + 3 = 11
+2x = 11 - 3
+2x = 8
+x = 4
 
-    Explain briefly but keep math clean.
-    """
+Explain briefly but keep math clean.
+"""
 
-        response = self.client.models.generate_content(
-            model=settings.GEMINI_MODEL,
-            contents=prompt
-        )
+        try:
+            response = self.client.models.generate_content(
+                model=settings.GEMINI_MODEL,
+                contents=prompt
+            )
 
-        answer = response.text
-        
+            if response.text:
+                answer = response.text
+            else:
+                answer = response.candidates[0].content.parts[0].text
 
-        # remove markdown artifacts
+        except Exception as e:
+            return f"Gemini ERROR: {str(e)}"
+
+        # Clean formatting artifacts
         answer = answer.replace("**", "")
         answer = answer.replace("*", "")
         answer = answer.replace("$", "")
         answer = answer.replace("\\(", "")
         answer = answer.replace("\\)", "")
 
-        # normalize symbols
-        answer = answer.replace("x ", "x ")
+        # Normalize symbols
         answer = answer.replace(" X ", " x ")
 
+        # Save conversation to Firestore
         self.memory.save_message(session_id, "student", message)
         self.memory.save_message(session_id, "assistant", answer)
 
