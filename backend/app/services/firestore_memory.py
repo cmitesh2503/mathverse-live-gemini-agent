@@ -7,7 +7,7 @@ class FirestoreMemory:
     def __init__(self):
 
         if not firebase_admin._apps:
-            cred = credentials.Certificate("firebase-key.json")
+            cred = credentials.Certificate("firebase.json")
             firebase_admin.initialize_app(cred)
 
         self.db = firestore.client()

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mathverse-live-ai",
+  "private_key_id": "c062c6a774a394103a530ea2115b0172277f640b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQDNVOVfgdiQgqUD\ngmQorxdWFoo5p5IUJHSk6yGAP0qc56IgvzuXyaAHNjJYrq1bEZCDVjIvb+vDeYsg\ngYckMjs60Dp2NaZCy93Y5R8ySxboY9N240KmCoqxD8hWj+mtxDXjEFQgGzHfrW5c\nTVaOwcwiXaqAyXkvLtYXTECHPA+nGjoL3eN7X0txW2DFct7kosdU7/I7O3kdXRuV\nCrKp8xMX872xLFZxZ+8RCBIJUhmxxsVRdoGgf/bq8PoW9VUV1G70awnSjYAzLzKR\nPB/fo2MjHg0t+TxoI+V8a6wlbc9agSJEn/mb0Wlf5reZWN3sIvd85JobaJagEF61\nw/bicsC9AgMBAAECgf8aLSziLquEevS9CW4Ye9zDkTNTyTents+FH4v3QevMzy85\nLBCypjA06bPegyB/TRsIAGl8ufaDDFjHhkdubSd8+uBKjrrpPXFQqbZ++LaV0oE6\nMnjvmsWH+6ml6w/2osckn8G8sy80JkUaCvCJn5+VHxX6mvqSN9q2NOscUnSVHp+k\nBQ/bEbPJ4Eh99w3qKbPtAGV5/zZaDuPNBngfU9/ENUjGA83wbKBV0fuOuD5LfByS\nk+JBKG+WnfKuw/YwSk5OpLO8A2rfN2A9pz0YkFcEOHU8Te4RiX8eQf574NaTsUGL\neABy78RtxdSaRv+4+S4yVZuLOnZ9kLaUQQge900CgYEA5jv6RaQGcgK1I+Zd80MR\nD5RaSs6qvB72P5o7UFKEcK9ublavVYMqKv7GSnMWVcRTIk2YdDko8kBvscO5imWp\nJoX1dnX/2CjxLqkR2zPM+ioXwHaz7ldTDaRwSlf3eAl80c0qZheg04z93oFeFSlJ\nt0TZqY8Rn7+//0BAo/l5ducCgYEA5E96Ra5iu+Kf+GEOfsIX7UBoV19/NlYhOFx0\n146B6mfgMB8YM+u704GP3ZUAtvpHzVm8hc5pInd18dRpXfHvyGFO/u1nYlf9UZ0P\nsC0HwoyEXGRG2+Xuo6O2wfT4cx83ioF2R9xiOz9Xe5YQczDh2w1/SIAT4YypVnt5\ninExKrsCgYEA0UA52wmVAhIL6DD7uph97Rb8aXkkHA5X6L6Yogwdav1G9Om8OZAY\nxzL/rbKj3hetJ0Q3B4rb+DEwUvR8sZhsACNIUP42JZQwgCQRopSV+9g99iLsrfaX\n+ZI2rJr+xA57b4N0wY1AEoXWRmB1ze3Uncjpuv3ZGsQAEFGpbl7TUokCgYAqpNGw\nzDay40x/5xj/Ah/X96zFjRfEvWetEE/ep0aK0uYj9trdb82AXvXRLHCavLrGl1lI\nINqwTmHgTo1zt6nS4qIPqaYiz06IfO6eOHr3kqlyXGSD1DmzpPOQ3MG/Nvh3zWCb\nYYWTjWw4sDnYWiwFb0rz7sBH468JcTytaCEH2wKBgCalOVsMGlgrgaDONfQ03ZIH\ndKXFEHzesNPpd48iUa2c1KkSWoX8hFIRYwuSJ+M781NkAj2QDzCRZQdY/guD4zk2\nvRmgINc/Fu9FEdFwqltkuqMXJW75XGtC6tDH3ViombfDEsNJW4d80xVGzhibh1Vh\n6bTMltx83uwhkb8CvXme\n-----END PRIVATE KEY-----\n",
+  "client_email": "mathverse-backend@mathverse-live-ai.iam.gserviceaccount.com",
+  "client_id": "105965455016687309770",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mathverse-backend%40mathverse-live-ai.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

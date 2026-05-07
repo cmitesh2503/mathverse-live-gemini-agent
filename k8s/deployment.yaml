@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mathverse-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mathverse-backend
+  template:
+    metadata:
+      labels:
+        app: mathverse-backend
+    spec:
+      containers:
+        - name: backend
+          image: asia-south1-docker.pkg.dev/mathverse-platform-dev/mathverse-repo/mathverse-backend:v2
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api-key
+                  key: GEMINI_API_KEY
+
+          volumeMounts:
+            - name: firebase-secret
+              mountPath: /app/firebase.json
+              subPath: firebase.json
+
+      volumes:
+        - name: firebase-secret
+          secret:
+            secretName: firebase-credentials
