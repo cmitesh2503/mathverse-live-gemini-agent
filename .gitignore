@@ -19,7 +19,7 @@ frontend/app/.dart_tool/
 
 # Firebase
 frontend/.firebase.json/
-
+backend/.firebase.json/
 # IDE
 .vscode/
 
