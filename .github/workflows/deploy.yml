@@ -21,6 +21,10 @@ jobs:
       - name: Setup Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Install GKE Auth Plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+
       - name: Get GKE Credentials
         run: |
           gcloud container clusters get-credentials mathverse-gke-dev \
