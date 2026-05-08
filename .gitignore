@@ -7,7 +7,7 @@ venv/
 backend/.env
 backend/firebase-key.json
 backend/service-account.json
-
+key.json
 # Terraform
 terraform/.terraform/
 terraform.tfstate
