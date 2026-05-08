@@ -6,7 +6,10 @@ from app.services.vision_service import VisionService
 from app.services.session_memory import SessionMemory
 #from app.services import gemini_service
 
-app = FastAPI(title="MathVerse AI Tutor API")
+app = FastAPI(title="MathVerse AI Tutor API",
+              docs_url="/api/docs",
+              openapi_url="/api/openapi.json"
+)
 
 app.add_middleware(
 CORSMiddleware,

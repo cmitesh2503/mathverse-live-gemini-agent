@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mathverse-ingress
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - http:
+        paths:
+
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: mathverse-backend-service
+                port:
+                  number: 80
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mathverse-frontend-service
+                port:
+                  number: 80

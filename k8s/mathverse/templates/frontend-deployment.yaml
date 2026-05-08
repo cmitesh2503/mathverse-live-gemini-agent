@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mathverse-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mathverse-frontend
+  template:
+    metadata: 
+      labels:
+        app: mathverse-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: asia-south1-docker.pkg.dev/mathverse-platform-dev/mathverse-repo/mathverse-frontend:v3
+          ports:
+            - containerPort: 80

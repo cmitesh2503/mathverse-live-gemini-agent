@@ -1,0 +1,7 @@
+frontend:
+  image:
+    image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+
+backend:
+  image:
+    image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
