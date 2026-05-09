@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: mathverse-backend
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: mathverse-backend
