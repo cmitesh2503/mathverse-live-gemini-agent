@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Backend secrets
+backend/.env
+backend/firebase-key.json
+backend/service-account.json
+key.json
+# Terraform
+terraform/.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# Flutter
+frontend/app/build/
+frontend/app/.dart_tool/
+
+# Firebase
+frontend/.firebase.json/
+backend/firebase.json/
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
