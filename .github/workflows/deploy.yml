@@ -48,4 +48,6 @@ jobs:
       - name: Deploy with Helm
         run: |
           helm upgrade --install mathverse ./k8s/mathverse \
+            -f ./k8s/mathverse/values-dev.yaml \
+            --set backend.image.repository=asia-south1-docker.pkg.dev/mathverse-platform-dev/mathverse-repo/mathverse-backend \
             --set backend.image.tag=${{ github.sha }}
