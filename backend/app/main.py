@@ -27,14 +27,14 @@ memory = SessionMemory()
 
 @app.get("/")
 def root():
-    return {"status": "MathVerse backend running"}
+    return {"status":"MathVerse backend running - deployed from GitHub Actions"}
 
 @app.get("/lesson")
 def get_lesson():
 
 
     return {
-        "concept": """
+        "concept_2": """
     ```
 
     A linear equation is an equation where the variable has power 1.
