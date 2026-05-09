@@ -63,7 +63,7 @@ def start_lesson():
         "message": """
     ```
 
-    Hello Aarav 👋
+    Hello Arnab 👋
 
     Today we will learn Linear Equations.
 
