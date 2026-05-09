@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: asia-south1-docker.pkg.dev/mathverse-platform-dev/mathverse-repo/mathverse-frontend:v3
+          #image: asia-south1-docker.pkg.dev/mathverse-platform-dev/mathverse-repo/mathverse-frontend:v3
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
           ports:
             - containerPort: 80
