@@ -34,10 +34,10 @@ def get_lesson():
 
 
     return {
-        "concept_2": """
+        "concept_1": """
     ```
 
-    A linear equation is an equation where the variable has power 1.
+    A linear equation is an equation where the variable has power 2.
 
     Example:
     2x + 5 = 13
