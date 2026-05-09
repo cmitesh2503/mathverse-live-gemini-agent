@@ -1,0 +1,11 @@
+frontend:
+  image:
+    repository: asia-south1-docker.pkg.dev/mathverse-platform-dev/mathverse-repo/mathverse-frontend
+    tag: latest
+
+backend:
+  image:
+    repository: asia-south1-docker.pkg.dev/mathverse-platform-dev/mathverse-repo/mathverse-backend
+    tag: latest
+
+replicaCount: 1
